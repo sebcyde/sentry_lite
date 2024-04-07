@@ -2,20 +2,16 @@ pub mod actions {
     use sysinfo::{Pid, PidExt, Process, ProcessExt, System, SystemExt};
 
     pub fn clean() {
-        println!(" ");
-        println!("Cleaning...");
+        println!("\nCleaning...");
         std::thread::sleep(std::time::Duration::from_secs(3));
-        println!("Clean Complete.");
-        println!(" ");
+        println!("Clean Complete. Exiting...\n");
         std::process::exit(0);
     }
     pub fn watch() {
-        println!(" ");
-        println!("Watching...");
+        println!("\nWatching...");
 
         loop {
-            println!("Watch interval...");
-            println!(" ");
+            println!("\nWatch interval...");
             std::thread::sleep(std::time::Duration::from_secs(3));
         }
     }
@@ -23,9 +19,7 @@ pub mod actions {
     pub fn archive() {}
 
     pub fn kill() {
-        println!(" ");
-        println!("Stopping Sentry...");
-        println!(" ");
+        println!("\nStopping Sentry...\n");
 
         let mut system: System = System::new_all();
         system.refresh_all();
@@ -45,7 +39,7 @@ pub mod actions {
             }
         }
 
-        println!("All Sentry instances stopped. Exiting...");
+        println!("All Sentry instances stopped. Exiting...\n");
         std::process::exit(0);
     }
 }

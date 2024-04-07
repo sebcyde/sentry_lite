@@ -7,8 +7,7 @@ pub mod actions;
 pub mod utils;
 
 fn main() {
-    println!(" ");
-    println!("Starting Sentry (Lite)...");
+    println!("\nStarting Sentry (Lite)...");
 
     let startup_args: Vec<String> = std::env::args().collect();
 
@@ -19,14 +18,12 @@ fn main() {
             "watch" => watch(),
             "kill" => kill(),
             _ => {
-                println!(" ");
-                println!("Invalid argument given. Available commands are:");
+                println!("\nInvalid argument given. Available commands are:");
                 startup_prompt();
             }
         }
     } else {
-        println!(" ");
-        println!("No argument given. Available commands are:");
+        println!("\nNo argument given. Available commands are:");
         startup_prompt();
     }
 }

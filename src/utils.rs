@@ -12,12 +12,10 @@ pub mod utils {
     pub fn startup_prompt() {
         let options: Vec<&str> = vec!["Clean", "Watch", "Archive", "Kill", "Quit"];
 
-        println!(" ");
-        println!("Clean - Initiates a single clean cycle");
+        println!("\nClean - Initiates a single clean cycle");
         println!("Watch - Initiates watch mode with constant clean cycle");
         println!("Kill - Kills any currently running Sentry watch instances");
-        println!("Quit - End the program");
-        println!(" ");
+        println!("Quit - End the program\n");
 
         let selection: usize = Select::new()
             .with_prompt("Select an action")
