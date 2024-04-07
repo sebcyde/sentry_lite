@@ -2,7 +2,42 @@ pub mod utils {
     use std::{
         ffi::{OsStr, OsString},
         path::PathBuf,
+        usize,
     };
+
+    use dialoguer::Select;
+
+    use crate::actions::actions::{archive, clean, kill, watch};
+
+    pub fn startup_prompt() {
+        let options: Vec<&str> = vec!["Clean", "Watch", "Archive", "Kill", "Quit"];
+
+        println!(" ");
+        println!("Clean - Initiates a single clean cycle");
+        println!("Watch - Initiates watch mode with constant clean cycle");
+        println!("Kill - Kills any currently running Sentry watch instances");
+        println!("Quit - End the program");
+        println!(" ");
+
+        let selection: usize = Select::new()
+            .with_prompt("Select an action")
+            .default(0)
+            .items(&options)
+            .interact()
+            .unwrap();
+
+        let selected_option: &str = options[selection];
+        println!("Selected: {}\n", selected_option);
+
+        match selected_option.to_ascii_lowercase().as_str() {
+            "archive" => archive(),
+            "clean" => clean(),
+            "watch" => watch(),
+            "kill" => kill(),
+            "quit" => std::process::exit(0),
+            _ => panic!(),
+        }
+    }
 
     fn get_file_name(file_path: &PathBuf) -> String {
         return file_path

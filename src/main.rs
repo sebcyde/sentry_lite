@@ -1,4 +1,7 @@
-use crate::actions::actions::{archive, clean, kill, watch};
+use crate::{
+    actions::actions::{archive, clean, kill, watch},
+    utils::utils::startup_prompt,
+};
 
 pub mod actions;
 pub mod utils;
@@ -18,20 +21,12 @@ fn main() {
             _ => {
                 println!(" ");
                 println!("Invalid argument given. Available commands are:");
-                println!(" ");
-                println!("clean - Initiates a single clean cycle");
-                println!("watch - Initiates watch mode with constant clean cycle");
-                println!("kill - Kills any currently running Sentry watch instances");
-                println!(" ");
+                startup_prompt();
             }
         }
     } else {
         println!(" ");
         println!("No argument given. Available commands are:");
-        println!(" ");
-        println!("clean - Initiates a single clean cycle");
-        println!("watch - Initiates watch mode with constant clean cycle");
-        println!("kill - Kills any currently running Sentry watch instances");
-        println!(" ");
+        startup_prompt();
     }
 }
