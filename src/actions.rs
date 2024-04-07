@@ -19,6 +19,9 @@ pub mod actions {
             std::thread::sleep(std::time::Duration::from_secs(3));
         }
     }
+
+    pub fn archive() {}
+
     pub fn kill() {
         println!(" ");
         println!("Stopping Sentry...");
