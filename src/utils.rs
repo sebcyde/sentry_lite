@@ -32,7 +32,7 @@ pub mod utils {
         std::fs::rename(file_path, new_path).expect("Failed to rename file");
     }
 
-    pub fn zip_directory(dir_path: PathBuf) {}
+    pub fn zip_directory(_dir_path: PathBuf) {}
     pub fn move_file(current_file_path: PathBuf, destination_path: PathBuf) -> Option<PathBuf> {
         if !current_file_path.exists() {
             println!("Invalid path provided");
