@@ -7,7 +7,7 @@ pub mod utils {
 
     use dialoguer::Select;
 
-    use crate::actions::actions::{archive, clean, kill, watch};
+    use crate::actions::actions::{clean, kill, purge, watch};
 
     pub fn startup_prompt() {
         let options: Vec<&str> = vec!["Clean", "Watch", "Archive", "Kill", "Quit"];
@@ -28,7 +28,7 @@ pub mod utils {
         println!("Selected: {}\n", selected_option);
 
         match selected_option.to_ascii_lowercase().as_str() {
-            "archive" => archive(),
+            "purge" => purge(),
             "clean" => clean(),
             "watch" => watch(),
             "kill" => kill(),

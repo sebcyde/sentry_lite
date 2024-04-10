@@ -1,5 +1,5 @@
 use crate::{
-    actions::actions::{archive, clean, kill, watch},
+    actions::actions::{clean, kill, purge, watch},
     utils::utils::startup_prompt,
 };
 
@@ -13,7 +13,7 @@ fn main() {
 
     if startup_args.len() > 1 {
         match startup_args[1].to_ascii_lowercase().as_str() {
-            "archive" => archive(),
+            "purge" => purge(),
             "clean" => clean(),
             "watch" => watch(),
             "kill" => kill(),

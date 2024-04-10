@@ -10,13 +10,17 @@ pub mod actions {
     pub fn watch() {
         println!("\nWatching...");
 
+        // Run in a seperate thread and then detach it
+
         loop {
             println!("\nWatch interval...");
             std::thread::sleep(std::time::Duration::from_secs(3));
         }
     }
 
-    pub fn archive() {}
+    pub fn purge() {
+        // Run through old stuff and PURGE
+    }
 
     pub fn kill() {
         println!("\nStopping Sentry...\n");
