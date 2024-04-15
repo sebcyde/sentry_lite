@@ -27,9 +27,11 @@ pub mod utils {
         let selected_option: &str = options[selection];
         println!("Selected: {}\n", selected_option);
 
+        let downloads_directory: std::path::PathBuf = dirs::download_dir().unwrap();
+
         match selected_option.to_ascii_lowercase().as_str() {
             "purge" => purge(),
-            "clean" => clean(),
+            "clean" => clean(downloads_directory),
             "watch" => watch(),
             "kill" => kill(),
             "quit" => std::process::exit(0),
@@ -62,35 +64,62 @@ pub mod utils {
         new_path.pop();
         new_path.push(get_file_name_lower(&PathBuf::from(new_file_name)));
 
+        println!("RENAME: {:?} > {:?}\n", &file_path, &new_path);
+
         std::fs::rename(file_path, new_path).expect("Failed to rename file");
+
+        println!("Reanme complete\n");
     }
 
     pub fn zip_directory(_dir_path: PathBuf) {}
-    pub fn move_file(current_file_path: PathBuf, destination_path: PathBuf) -> Option<PathBuf> {
-        if !current_file_path.exists() {
-            println!("Invalid path provided");
-            return None;
-        }
 
-        if !current_file_path.is_file() {
-            println!("Provided path is not a file.");
-            return None;
-        }
+    pub enum FILETYPE {
+        IMAGE,
+        VIDEO,
+        AUDIO,
+        DOCUMENT,
+        DESIGN,
+        ARCHIVE,
+        CODE,
+    }
+
+    pub fn move_file(current_file_path: PathBuf, file_type: FILETYPE) -> Option<PathBuf> {
+        let mut destination_path: PathBuf = match file_type {
+            FILETYPE::IMAGE => dirs::picture_dir().unwrap(),
+            FILETYPE::AUDIO => dirs::audio_dir().unwrap(),
+            FILETYPE::DESIGN => dirs::picture_dir().unwrap(),
+            FILETYPE::DOCUMENT => dirs::document_dir().unwrap(),
+            FILETYPE::VIDEO => dirs::video_dir().unwrap(),
+            FILETYPE::ARCHIVE => dirs::document_dir().unwrap(),
+            FILETYPE::CODE => dirs::document_dir().unwrap(),
+        };
+
+        println!("Moving file to {:?}", &destination_path);
 
         // Format file name to lower + replace spaces
         let old_file_name: String = get_file_name(&current_file_path);
         let new_file_name: String = get_file_name_lower(&current_file_path);
         rename_file(&current_file_path, &new_file_name);
+
         println!("Format Complete: {:?} > {}", &old_file_name, &new_file_name);
 
+        destination_path.push(&new_file_name);
+        let mut old_path = current_file_path.clone();
+        old_path.pop();
+        old_path.push(&new_file_name);
+
+        println!("DESTINATION: {:?}", &destination_path);
+
+        // panic!();
         if destination_path.exists() {
-            println!("An entity already exists at specified destination.");
+            println!("An entity already exists at specified destination.\n");
+            return None;
+        } else {
+            // Move the file
+            std::fs::rename(&old_path, &destination_path).expect("Failed to rename file");
+            println!("File move complete.\n");
+
+            return Some(destination_path);
         }
-
-        // Move the file
-        std::fs::rename(current_file_path, &destination_path).expect("Failed to rename file");
-        println!("File move complete.");
-
-        return Some(destination_path);
     }
 }

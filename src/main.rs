@@ -14,7 +14,10 @@ fn main() {
     if startup_args.len() > 1 {
         match startup_args[1].to_ascii_lowercase().as_str() {
             "purge" => purge(),
-            "clean" => clean(),
+            "clean" => {
+                let downloads_directory: std::path::PathBuf = dirs::download_dir().unwrap();
+                clean(downloads_directory);
+            }
             "watch" => watch(),
             "kill" => kill(),
             _ => {
