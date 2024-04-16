@@ -3,12 +3,15 @@ pub mod actions {
 
     use sysinfo::{Pid, Process, System};
 
-    use crate::utils::utils::{move_file, FILETYPE};
+    use crate::{
+        config::config::get_config_data,
+        types::types::{UserConfig, FILETYPE},
+        utils::utils::{move_directory, move_file},
+    };
 
     pub fn clean(directory: PathBuf) {
         println!("\nCleaning...");
-        // std::thread::sleep(std::time::Duration::from_secs(3));
-        // println!("Clean Complete. Exiting...\n");
+        let config: UserConfig = get_config_data();
 
         for entry in read_dir(directory).unwrap().filter_map(|e| e.ok()) {
             let entry_path: PathBuf = entry.path();
@@ -25,14 +28,14 @@ pub mod actions {
                 let ext: &str = lower_ext.as_str();
 
                 let option_file_type: Option<FILETYPE> = match ext {
-                    "jpg" | "jpeg" | "png" => Some(FILETYPE::IMAGE),
-                    "mp4" | "mov" => Some(FILETYPE::VIDEO),
-                    "mp3" => Some(FILETYPE::AUDIO),
-                    "xd" | "ai" => Some(FILETYPE::DESIGN),
-                    "doc" | "docx" | "pdf" | "csv" => Some(FILETYPE::DOCUMENT),
-                    "zip" | "rar" => Some(FILETYPE::ARCHIVE),
+                    "doc" | "docx" | "pp" | "pdf" | "csv" => Some(FILETYPE::DOCUMENT),
                     "js" | "css" | "scss" | "twig" => Some(FILETYPE::CODE),
-                    _ => None,
+                    "jpg" | "jpeg" | "png" => Some(FILETYPE::IMAGE),
+                    "zip" | "rar" => Some(FILETYPE::FOLDERS),
+                    "mp4" | "mov" => Some(FILETYPE::VIDEO),
+                    "xd" | "ai" => Some(FILETYPE::DESIGN),
+                    "mp3" => Some(FILETYPE::AUDIO),
+                    _ => Some(FILETYPE::MISC),
                 };
 
                 if let Some(file_type) = option_file_type {
@@ -45,27 +48,41 @@ pub mod actions {
                 }
             } else {
                 println!("DIRECTORY FOUND. Running recursive mode.\n");
-                clean(entry_path);
+
+                let mut entries = std::fs::read_dir(&entry_path).unwrap();
+                let is_empty: bool = entries.next().is_none();
+
+                if is_empty {
+                    std::fs::remove_dir(&entry_path).expect("Failed to remove empty directory.");
+                } else {
+                    let destination: PathBuf = PathBuf::from(config.folders_location.clone());
+                    move_directory(entry_path, destination).expect("Failed to move directory");
+                }
             }
         }
+
+        std::thread::sleep(std::time::Duration::from_secs(3));
+        println!("Clean Complete. Exiting...\n");
     }
 
     pub fn watch() {
         println!("\nWatching...");
 
-        // Run in a seperate thread and then detach it
+        // TODO -> Run in a seperate thread and then detach it
 
-        loop {
-            println!("\nWatch interval...");
-            std::thread::sleep(std::time::Duration::from_secs(3));
-        }
+        // loop {
+        //     println!("\nWatch interval...");
+        //     std::thread::sleep(std::time::Duration::from_secs(3));
+        // }
     }
 
     pub fn purge() {
-        // Run through old stuff and PURGE
+        // Run through archive and PURGE
     }
 
     pub fn kill() {
+        // Kill any existing instaces of Sentry
+
         println!("\nStopping Sentry...\n");
 
         let mut system: System = System::new_all();
