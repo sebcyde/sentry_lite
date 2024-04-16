@@ -1,5 +1,5 @@
 pub mod utils {
-    use std::{ffi::OsString, path::PathBuf, usize};
+    use std::{ffi::OsString, fs::ReadDir, path::PathBuf, usize};
 
     use dialoguer::Select;
 
@@ -15,7 +15,7 @@ pub mod utils {
     }
 
     pub fn startup_prompt() {
-        let options: Vec<&str> = vec!["Clean", "Watch", "Archive", "Kill", "Quit"];
+        let options: Vec<&str> = vec!["Clean", "Watch", "Kill", "Quit"];
 
         println!("\nClean - Initiates a single clean cycle");
         println!("Watch - Initiates watch mode with constant clean cycle");
@@ -68,13 +68,7 @@ pub mod utils {
         let mut new_path: PathBuf = file_path.clone();
         new_path.pop();
         new_path.push(get_file_name_lower(&PathBuf::from(new_file_name)));
-
-        println!("RENAME: {:?} > {:?}\n", &file_path, &new_path);
-
         std::fs::rename(file_path, &new_path).expect("Failed to rename file");
-
-        println!("Reanme complete\n");
-
         return new_path;
     }
 
@@ -111,21 +105,42 @@ pub mod utils {
     //     }
     // }
 
+    pub fn remove_dir_if_empty(destination_dir: &PathBuf) -> Option<&PathBuf> {
+        let entries: ReadDir = std::fs::read_dir(&destination_dir).unwrap();
+        let is_empty: &bool = &entries.count().eq(&0);
+
+        if *is_empty {
+            println!("is_empty: {:?}", &is_empty);
+
+            _ = std::fs::remove_dir(&destination_dir);
+            return None;
+        }
+
+        return Some(destination_dir);
+    }
+
     pub fn move_directory(
         current_dir_path: PathBuf,
         destination_dir: PathBuf,
     ) -> std::io::Result<()> {
         // TODO -> Add zipping functionality
 
-        println!("ORIGINAL DIR DESTINATION ->> {:?}\n\n", &destination_dir);
+        let res: Option<&PathBuf> = remove_dir_if_empty(&current_dir_path);
+        if res.is_none() {
+            println!("Removed empty directory.");
+            return Ok(());
+        }
+
+        println!("original destination:: {:?}", &destination_dir);
 
         let new_dir_name: String = get_file_name_lower(&current_dir_path);
-        println!("new_dir_name ->> {:?}", &new_dir_name);
+        let mut new_destination: PathBuf = destination_dir.clone();
 
-        let destination: PathBuf = rename_file(&current_dir_path, &new_dir_name);
-        println!("destination ->> {:?}", &destination);
+        new_destination.push(new_dir_name);
 
-        return std::fs::rename(current_dir_path, destination);
+        println!("destination:: {:?}", &new_destination);
+
+        return std::fs::rename(current_dir_path, new_destination);
     }
 
     pub fn move_file(current_file_path: PathBuf, file_type: FILETYPE) -> Option<PathBuf> {
@@ -143,6 +158,17 @@ pub mod utils {
             FILETYPE::MISC => PathBuf::from(user_config.misc_location),
         };
 
+        if destination_path.to_str().unwrap().eq_ignore_ascii_case("") {
+            let mut misc_dir_raw: PathBuf = dirs::document_dir().unwrap();
+            misc_dir_raw.push("Sentry");
+            misc_dir_raw.push("Misc_Files");
+
+            std::fs::create_dir_all(&misc_dir_raw).expect("Failed to create misc directory.");
+
+            destination_path = misc_dir_raw;
+            println!("\n\nFILE SKIPPED -- MOVED TO MISC DIR\n\n");
+        }
+
         println!("Moving file to {:?}", &destination_path);
 
         // Format file name to lower + replace spaces
@@ -150,14 +176,22 @@ pub mod utils {
         let new_file_name: String = get_file_name_lower(&current_file_path);
         rename_file(&current_file_path, &new_file_name);
 
-        println!("Format Complete: {:?} > {}", &old_file_name, &new_file_name);
+        println!("destination_path 1: {:?}", &destination_path);
 
         destination_path.push(&new_file_name);
-        let mut old_path = current_file_path.clone();
-        old_path.pop();
-        old_path.push(&new_file_name);
 
-        println!("DESTINATION: {:?}", &destination_path);
+        println!("destination_path 2: {:?}", &destination_path);
+
+        let mut old_path = current_file_path.clone();
+
+        println!("old_path 1: {:?}", &old_path);
+
+        old_path.pop();
+
+        println!("old_path 2: {:?}", &old_path);
+
+        old_path.push(&new_file_name);
+        println!("old_path 3: {:?}", &old_path);
 
         if destination_path.exists() {
             println!("An entity already exists at specified destination.\n");

@@ -24,7 +24,7 @@ fn main() {
         println!("Config loaded succesfully.\n");
     }
 
-    panic!();
+    // panic!();
 
     let startup_args: Vec<String> = std::env::args().collect();
 

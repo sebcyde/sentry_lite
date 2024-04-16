@@ -1,0 +1,71 @@
+{% set sides = [section.productleftblock, section.productrightblock] %}
+{% set hasWidget = false %}
+{% set leftSlider = false %}
+{% for side in sides %}
+  {% for group in side %}
+    {% if group.block == 'widgetsection' %}
+    {% set hasWidget = true %}
+    {% endif %}
+    {% if group.block == 'slidersection' or group.block == 'imagesection' %}
+    {% set leftSlider = loop.parent.loop.index == 1 ? true : false %}
+    {% endif %}
+  {% endfor %}
+{% endfor %}
+
+<div class="es_content__container es_drop-shadow--standard-desk {{leftSlider ? 're_flex--col-reverse--mobile'}} {{ hasWidget ? 'es_widget_banner' : 're_pad--20 re_no-h-padding--mobile re_no-b-padding--mobile'  }} es_content__container--{{ section.contentwidth }} re_flex--all es_bg-{{ bg }} {{ not bgrepeat ? 'es_background-image--center-cover'}} {{section.optionclass}}"
+{% if bgimg %} style="background-image: url({{ asset(bgimg.file, 'files') }}); {{ bgscale ? 'background-size:' ~ imageinfo(bgimg.file).width / 2 ~ 'px'}};" {% endif %}>
+
+  {% for side in sides %}
+    {% for group in side %}
+    {% set colStyles = hasWidget ? ((group.block != 'widgetsection') ? (group.block == 'imagesection') ? 're_col-60 re_hide-on--mobile-tablet' : 're_col-60 re_pad--20 re_no-h-padding--mobile re_no-v-padding--mobile padded  es_oveflowx' : 're_col-40 re_no-padding re_z-100') : (group.block == 'textsection') ? 're_col-40 re_pad_h-60--desktop padded': 're_col-60 es_oveflowx re_no-h-padding--mobile re_no-b-padding--mobile' %}
+    {% if section.contentwidth < '1260' %}
+       {% set colStyles = hasWidget ? ((group.block != 'widgetsection') ? (group.block == 'imagesection') ? 're_col-55 re_hide-on--mobile-tablet' : 're_col-55 re_pad--20--desktop re_no-h-padding--mobile re_no-v-padding--mobile padded es_oveflowx' : 're_col-45 re_no-padding re_z-100') : (group.block == 'textsection') ? 're_col-45 re_pad_h-60--desktop padded': 're_col-55 es_oveflowx re_no-h-padding--mobile re_no-b-padding--mobile' %}
+    {% endif %}
+    
+      {% set showContent = loop.index == 1 ? true : false %}
+      <div class="re_pos--relative {{ showContent ? '' : 're_hide-on--all' }}  re_flex re_flex--content-center re_flex--col re_flex--items-center re_align-center {{ colStyles }} ">
+
+
+      {% if group.block == 'textsection' %}
+        <h2>{{ group.heading }}</h2>
+        {% if group.headingunderline|default %}
+          <div class="es_decoration">
+            <img class="es_dec-w-250" src="{{ asset('assets/img/common-assets/es_common_diamond_circuit-darkblue.png', 'theme') }}">
+          </div>
+        {% endif %}
+        {{ group.content | raw }}
+        {% if group.buttonurl|default %}
+          <p>
+            <a href="{{ group.buttonurl | lower }}" target="{% if group.buttonnewTab == 'buttonsection' %}_blank{% endif %}"
+              class="es_btn es_btn--dark-tan es_glitch-border es_glitch-text-med"><span data-text="{{ group.buttoncopy }}">{{ group.buttoncopy }}</span></a>
+          </p>
+        {% endif %}  
+      {% endif %}
+
+      {% if group.block == 'imagesection' %}
+          <img class="es_widget_image {{ imageinfo(group.image.file).width == imageinfo(group.image.file).height ? 'es_widget_image-square' }}" src="{{ group.image.file | image }}" alt="{{ group.image.alt }}">
+        {% if group.mobileimage.file != '' %}
+          <img src="{{ group.mobileimage.file | image }}" alt="{{ group.image.alt }}">
+        {% endif %}
+      {% endif %}
+      
+      {% if group.block == 'slidersection' %}
+        
+        {{ include('partials/_slider.twig', { 'slider' : group.slider, 'color': 'dark', 'active': 'true', 'width' : 'full' } ) }}
+      {% endif %}
+
+      {% if group.block == 'widgetsection' %}
+        {% if city.holdingsite and not city.holdingsitebooking %}
+          {{ include('partials/_booking-widget.twig' , {'textcolor' : textcolor }) }}
+        {% else %}
+          {{ include('partials/_'~group.widgetType~'.twig', { 'displayType' : 'slider' } ) }}
+        {% endif %}
+      {% endif %}
+
+    
+    </div>
+  {% endfor %}
+ {% endfor %}
+</div> 
+
+
