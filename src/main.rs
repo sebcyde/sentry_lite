@@ -32,8 +32,7 @@ fn main() {
         match startup_args[1].to_ascii_lowercase().as_str() {
             "purge" => purge(),
             "clean" => {
-                let downloads_directory: std::path::PathBuf = dirs::download_dir().unwrap();
-                clean(downloads_directory);
+                clean(dirs::download_dir().unwrap());
             }
             "watch" => watch(),
             "kill" => kill(),

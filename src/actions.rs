@@ -1,5 +1,5 @@
 pub mod actions {
-    use std::{ffi::OsStr, fs::read_dir, path::PathBuf};
+    use std::{ffi::OsStr, fs::read_dir, path::PathBuf, process::Output};
 
     use sysinfo::{Pid, Process, System};
 
@@ -14,7 +14,7 @@ pub mod actions {
         let config: UserConfig = get_config_data();
 
         for entry in read_dir(directory).unwrap().filter_map(|e| e.ok()) {
-            // std::thread::sleep(std::time::Duration::from_secs(2));
+            std::thread::sleep(std::time::Duration::from_millis(100));
 
             let entry_path: PathBuf = entry.path();
             println!("Entry: {:?}", &entry_path);
@@ -88,43 +88,48 @@ pub mod actions {
 
     pub fn watch() {
         println!("\nWatching...");
-
-        // TODO -> Run in a seperate thread and then detach it
-
-        // loop {
-        //     println!("\nWatch interval...");
-        //     std::thread::sleep(std::time::Duration::from_secs(3));
-        // }
-    }
-
-    pub fn purge() {
-        // Run through archive and PURGE
+        std::thread::spawn(move || loop {
+            clean(dirs::download_dir().unwrap());
+            std::thread::sleep(std::time::Duration::from_secs(3));
+        });
     }
 
     pub fn kill() {
-        // Kill any existing instaces of Sentry
+        // Kill any existing instaces of Sentry - Kill any watchers
 
         println!("\nStopping Sentry...\n");
 
-        let mut system: System = System::new_all();
-        system.refresh_all();
-
-        let mut sentry_instances: Vec<(&Pid, &Process)> = Vec::new();
         let current_sentry: u32 = std::process::id();
+        println!("Current Sentry PID: {:?}", current_sentry);
 
-        for (pid, process) in system.processes() {
-            if process.name().eq_ignore_ascii_case("sentry_lite") {
-                sentry_instances.push((pid, process));
-            }
-        }
+        // Filter out Sentry instances
+        let output: Output = std::process::Command::new("ps")
+            .arg("-ax")
+            .output()
+            .expect("Failed to execute command");
 
-        for (pid, process) in sentry_instances {
-            if !pid.as_u32().eq(&current_sentry) {
-                process.kill();
+        let output_string = String::from_utf8_lossy(&output.stdout);
+
+        // Iterate over lines in the output
+        for line in output_string.lines() {
+            // Check if the line contains "sentry_lite"
+            if line.contains("sentry_lite") {
+                let pid: &str = line.split_whitespace().next().unwrap();
+
+                if let Ok(pid_u32) = pid.parse::<u32>() {
+                    if pid_u32 != current_sentry {
+                        let _ = std::process::Command::new("kill").arg(pid).status();
+                        println!("Killed Sentry instance with PID {}", pid);
+                    }
+                }
             }
         }
 
         println!("All Sentry instances stopped. Exiting...\n");
         std::process::exit(0);
+    }
+
+    pub fn purge() {
+        // Run through archive and PURGE
     }
 }
